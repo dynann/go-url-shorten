@@ -15,7 +15,7 @@ type Link struct {
 
 var linkMap = map[string]*Link{ "example": { Id: "example", Url: "https://example.com", }, }
 
-const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+const charset = "abcdefghijklmnopqrstuvwxyz0123456789"
 func RedirectHandler(c echo.Context) error { 
 	id := c.Param("id")
 	link, found := linkMap[id]
@@ -33,13 +33,21 @@ func generateRandomString(length int) string {
 		index := seededRand.Intn(len(charset))
 		result = append(result, charset[index])
 	}
-	return string(result)
+
+	newResult := "https://" + string(result) + ".dn"
+	return newResult
 }
+
+//check the link availability before shortening
 
 func SubmitHandler(c echo.Context) error {
 	url := c.FormValue("url")
 	if url == "" {
 		return c.String(http.StatusBadRequest, "url is required")
+	}
+
+	if !linkValidation(url) {
+		return c.String(http.StatusGatewayTimeout, "link is not availabel")
 	}
 
 	if !(len(url) >= 4 && (url[:4] == "http"  || url[:5] == "https")) {
