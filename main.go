@@ -14,7 +14,6 @@ func main() {
 	e.GET("/:id", RedirectHandler)
 	e.GET("/", IndexHandler)
 	e.POST("/submit", SubmitHandler )
-
 	e.Logger.Fatal(e.Start(":8080"))
 	
 }
