@@ -1,19 +1,28 @@
 package main
+
 import (
+	"fmt"
 	"math/rand"
 	"net/http"
+	"strconv"
 	"time"
+
 	"github.com/labstack/echo/v4"
 )
 
 
+type ClickTime struct {
+	Date time.Time
+}
 
 type Link struct {
 	Id string
 	Url string
+	Clicks int
+	ClickRecord []ClickTime
 }
 
-var linkMap = map[string]*Link{ "example": { Id: "example", Url: "https://example.com", }, }
+var linkMap = map[string]*Link{ "example": { Id: "example", Url: "https://example.com", Clicks: 0, ClickRecord: nil }, }
 
 const charset = "abcdefghijklmnopqrstuvwxyz0123456789"
 func RedirectHandler(c echo.Context) error { 
@@ -22,6 +31,17 @@ func RedirectHandler(c echo.Context) error {
 	if !found { 
 		return  c.String(http.StatusNotFound, "link not found")
 	}
+	if onClickCheck(link.Url, c) != nil {
+		return c.String(http.StatusNotFound, "link not found")
+	}
+	if link.ClickRecord == nil {
+		link.ClickRecord = []ClickTime{}
+	}
+	link.ClickRecord = append(link.ClickRecord, ClickTime{
+		Date: time.Now(),
+	})
+	link.Clicks += 1
+	fmt.Println("here is the value ✅✅", link.ClickRecord)
 	return c.Redirect(http.StatusMovedPermanently, link.Url)
 }
 
@@ -74,8 +94,27 @@ func IndexHandler(c echo.Context) error {
 		<ul>`
 
 	for _, link := range linkMap {
-		html += `<li><a href="/` + link.Id + `">` + link.Id + `</a></li>`
+		// Show the link and click count
+		html += `<li><a href="/` + link.Id + `">` + link.Id + `</a> ` + strconv.Itoa(link.Clicks) + `</li>`
+
+		// Start table
+		html += `<table border="1" cellpadding="5">
+		<tr><th>Click Time</th></tr>`
+
+		// Loop through each click record
+		for _, record := range link.ClickRecord {
+			html += `<tr><td>` + record.Date.Format("2006-01-02 15:04:05") + `</td></tr>`
+		}
+
+		html += `</table>`
 	}
+
 	html += `</ul>`
 	return c.HTML(http.StatusOK, html)
+}
+
+
+func onClickCheck(url string, c echo.Context) error{
+	err := c.Redirect(http.StatusFound, url)
+	return err
 }
