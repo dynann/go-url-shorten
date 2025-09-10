@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
+
 	// "strconv"
 	"time"
 
@@ -31,25 +32,39 @@ type Links []Link
 var linkMap = map[string]*Link{ "example": { Id: "example", Url: "https://example.com", Clicks: 0, ClickRecord: nil }, }
 
 const charset = "abcdefghijklmnopqrstuvwxyz0123456789"
+
+
 func RedirectHandler(c echo.Context) error { 
 	id := c.Param("id")
+	fmt.Println("--> ✅✅✅✅",id)
 	link, found := linkMap[id]
 	if !found { 
 		return  c.String(http.StatusNotFound, "link not found")
 	}
 	if onClickCheck(link.Url, c) != nil {
-		return c.String(http.StatusNotFound, "link not found")
+		return c.String(http.StatusNotFound, "link is not found")
 	}
+
+	// fmt.Println("--> ✅✅✅✅", *link)
 	if link.ClickRecord == nil {
 		link.ClickRecord = []ClickTime{}
 	}
+
 	link.ClickRecord = append(link.ClickRecord, ClickTime{
 		Date: time.Now(),
 	})
 	link.Clicks += 1
-	fmt.Println("here is the value ✅✅", link.ClickRecord)
-	return c.Redirect(http.StatusMovedPermanently, link.Url)
+	return c.JSON(http.StatusAccepted, *link)
+	// return c.Redirect(http.StatusMovedPermanently, link.Url)
 }
+
+// func DirectHandler(c echo.Context) error {
+// 	id := c.Param("id")
+// 	link, found := linkMap[id]
+// 	if !found {
+// 		return c.String(http)
+// 	}
+// }
 
 
 func generateRandomString(length int) string {
@@ -60,7 +75,7 @@ func generateRandomString(length int) string {
 		result = append(result, charset[index])
 	}
 
-	newResult := "https://" + string(result) + ".dn"
+	newResult := string(result)
 	return newResult
 }
 
@@ -89,7 +104,7 @@ func SubmitHandler(c echo.Context) error {
 	id := generateRandomString(8)
 	// fmt.Println("❤️❤️==> id:", id)
 	linkMap[id] = &Link{
-		Id: id,
+		Id:  id,
 		Url: req.Url,
 	}
 	// fmt.Println("hello world⭐😉😂🤣🫤💀✅😚🥀😼😁🗣️", req.Url, req.Id)
@@ -98,7 +113,6 @@ func SubmitHandler(c echo.Context) error {
 }
 
 func IndexHandler(c echo.Context) error {
-	
 	links := Links{}
 
 	for _, val := range linkMap {
@@ -116,7 +130,6 @@ func onClickCheck(url string, c echo.Context) error{
 
 
 func DeleteHandler(c echo.Context) error {
-	// fmt.Println("--> ✅✅✅called")
 	req := c.Param("id")
 	_, found := linkMap[req]
 	if(!found) {

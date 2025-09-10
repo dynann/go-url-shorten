@@ -30,15 +30,16 @@ func main() {
 	
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-	e.Use(middleware.Secure())
+	// e.Use(middleware.Secure())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"http://localhost:3000"},
-		AllowMethods: []string{http.MethodGet, http.MethodPost, http.MethodDelete},
-		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
+		AllowOrigins: []string{"http://localhost:3000", "http://localhost:8080"},
+		AllowMethods: []string{http.MethodGet, http.MethodPost, http.MethodDelete, http.MethodPut, http.MethodOptions, http.MethodPatch},
+		// AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
+		AllowHeaders: []string{"*"},
 	}))
 	e.Static("/staitc", "static")
-	e.GET("/:id", RedirectHandler)
 	e.GET("/", IndexHandler)
+	e.GET("/:id", RedirectHandler)
 	e.POST("/submit", SubmitHandler)
 	e.DELETE("/:id", DeleteHandler)
 	e.Logger.Fatal(e.Start(":8080"))
