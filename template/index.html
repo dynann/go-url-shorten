@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>fsdfsfds</title>
+  <h1>Submit a new website</h1>
+		<form action="/submit" method="POST">
+		<label for="url">Website URL:</label>
+		<input type="text" id="url" name="url">
+		<input type="submit" value="Submit">
+		</form>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-6">
+  <div class="max-w-3xl mx-auto bg-white shadow-lg rounded-xl p-6">
+    <h1 class="text-3xl font-bold text-blue-600 mb-6">{{.Title}}</h1>
+
+    <h2 class="text-xl font-semibold mb-4">Links</h2>
+    <ul class="space-y-4">
+      {{range .linkMap}}
+        <li class="border-b pb-2">
+          <a href="/{{.Id}}" class="text-blue-500 hover:underline">{{.Id}}</a>
+          <span class="ml-2 text-gray-600">Clicks: {{.Clicks}}</span>
+
+          <!-- Table for click times -->
+          <table class="mt-2 w-full border border-gray-300 text-sm">
+            <thead class="bg-gray-200">
+              <tr>
+                <th class="px-2 py-1 text-left">Click Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{range .ClickRecord}}
+                <tr>
+                  <td class="px-2 py-1">{{.Date}}</td>
+                </tr>
+              {{else}}
+                <tr>
+                  <td class="px-2 py-1 text-gray-400 italic">No clicks yet</td>
+                </tr>
+              {{end}}
+            </tbody>
+          </table>
+        </li>
+      {{end}}
+    </ul>
+  </div>
+</body>
+</html>

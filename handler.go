@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
-	"strconv"
+	// "strconv"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -15,12 +15,18 @@ type ClickTime struct {
 	Date time.Time
 }
 
+type Response struct {
+	Message string
+}
+
 type Link struct {
 	Id string
 	Url string
 	Clicks int
 	ClickRecord []ClickTime
 }
+
+type Links []Link
 
 var linkMap = map[string]*Link{ "example": { Id: "example", Url: "https://example.com", Clicks: 0, ClickRecord: nil }, }
 
@@ -61,60 +67,72 @@ func generateRandomString(length int) string {
 //check the link availability before shortening
 
 func SubmitHandler(c echo.Context) error {
-	url := c.FormValue("url")
-	if url == "" {
-		return c.String(http.StatusBadRequest, "url is required")
+	// url := c.FormValue("url")
+	req := new(Link)
+	if url1 := c.Bind(req); url1 != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "invalid request",
+		})
 	}
+	// if url == "" {
+	// 	return c.String(http.StatusBadRequest, "url is required")
+	// }
 
-	if !linkValidation(url) {
+	if !linkValidation(req.Url) {
 		return c.String(http.StatusGatewayTimeout, "link is not availabel")
 	}
 
-	if !(len(url) >= 4 && (url[:4] == "http"  || url[:5] == "https")) {
-		url = "https://" + url
+	if !(len(req.Url) >= 4 && (req.Url[:4] == "http"  || req.Url[:5] == "https")) {
+		req.Url = "https://" + req.Url
 	}
 
 	id := generateRandomString(8)
+	// fmt.Println("❤️❤️==> id:", id)
 	linkMap[id] = &Link{
 		Id: id,
-		Url: url,
+		Url: req.Url,
 	}
-	return c.Redirect(http.StatusSeeOther, "/")
+	// fmt.Println("hello world⭐😉😂🤣🫤💀✅😚🥀😼😁🗣️", req.Url, req.Id)
+
+	return c.JSON(http.StatusOK,linkMap[id])
 }
 
 func IndexHandler(c echo.Context) error {
-	html := `
-		<h1>Submit a new website</h1>
-		<form action="/submit" method="POST">
-		<label for="url">Website URL:</label>
-		<input type="text" id="url" name="url">
-		<input type="submit" value="Submit">
-		</form>
-		<h2>Existing Links </h2>
-		<ul>`
+	
+	links := Links{}
 
-	for _, link := range linkMap {
-		// Show the link and click count
-		html += `<li><a href="/` + link.Id + `">` + link.Id + `</a> ` + strconv.Itoa(link.Clicks) + `</li>`
-
-		// Start table
-		html += `<table border="1" cellpadding="5">
-		<tr><th>Click Time</th></tr>`
-
-		// Loop through each click record
-		for _, record := range link.ClickRecord {
-			html += `<tr><td>` + record.Date.Format("2006-01-02 15:04:05") + `</td></tr>`
-		}
-
-		html += `</table>`
+	for _, val := range linkMap {
+		links = append(links, *val)
 	}
+	return c.JSON(http.StatusOK, links)
 
-	html += `</ul>`
-	return c.HTML(http.StatusOK, html)
 }
 
 
 func onClickCheck(url string, c echo.Context) error{
 	err := c.Redirect(http.StatusFound, url)
 	return err
+}
+
+
+func DeleteHandler(c echo.Context) error {
+	// fmt.Println("--> ✅✅✅called")
+	req := c.Param("id")
+	_, found := linkMap[req]
+	if(!found) {
+		return c.String(http.StatusNotFound,"link not found")
+	}
+	newLinkMap := map[string]*Link{}
+	for _, link := range linkMap {
+		if link.Id != req {
+			newLinkMap[link.Id] = &Link{ Id: link.Id, Url: link.Url, Clicks: link.Clicks, ClickRecord: link.ClickRecord}
+		}
+	}
+	linkMap = newLinkMap
+	links := Links{}
+
+	for _, val := range linkMap {
+		links = append(links, *val)
+	}
+	return c.JSON(http.StatusOK, links)
 }
