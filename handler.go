@@ -1,13 +1,10 @@
 package main
 
 import (
-	"fmt"
+	// "fmt"
 	"math/rand"
 	"net/http"
-
-	// "strconv"
 	"time"
-
 	"github.com/labstack/echo/v4"
 )
 
@@ -36,7 +33,7 @@ const charset = "abcdefghijklmnopqrstuvwxyz0123456789"
 
 func RedirectHandler(c echo.Context) error { 
 	id := c.Param("id")
-	fmt.Println("--> ✅✅✅✅",id)
+	// fmt.Println("--> ✅✅✅✅",id)
 	link, found := linkMap[id]
 	if !found { 
 		return  c.String(http.StatusNotFound, "link not found")
@@ -45,7 +42,6 @@ func RedirectHandler(c echo.Context) error {
 		return c.String(http.StatusNotFound, "link is not found")
 	}
 
-	// fmt.Println("--> ✅✅✅✅", *link)
 	if link.ClickRecord == nil {
 		link.ClickRecord = []ClickTime{}
 	}
@@ -55,16 +51,7 @@ func RedirectHandler(c echo.Context) error {
 	})
 	link.Clicks += 1
 	return c.JSON(http.StatusAccepted, *link)
-	// return c.Redirect(http.StatusMovedPermanently, link.Url)
 }
-
-// func DirectHandler(c echo.Context) error {
-// 	id := c.Param("id")
-// 	link, found := linkMap[id]
-// 	if !found {
-// 		return c.String(http)
-// 	}
-// }
 
 
 func generateRandomString(length int) string {
@@ -80,7 +67,6 @@ func generateRandomString(length int) string {
 }
 
 //check the link availability before shortening
-
 func SubmitHandler(c echo.Context) error {
 	// url := c.FormValue("url")
 	req := new(Link)
@@ -89,25 +75,15 @@ func SubmitHandler(c echo.Context) error {
 			"error": "invalid request",
 		})
 	}
-	// if url == "" {
-	// 	return c.String(http.StatusBadRequest, "url is required")
-	// }
-
-	if !linkValidation(req.Url) {
-		return c.String(http.StatusGatewayTimeout, "link is not availabel")
-	}
-
 	if !(len(req.Url) >= 4 && (req.Url[:4] == "http"  || req.Url[:5] == "https")) {
 		req.Url = "https://" + req.Url
 	}
 
 	id := generateRandomString(8)
-	// fmt.Println("❤️❤️==> id:", id)
 	linkMap[id] = &Link{
 		Id:  id,
 		Url: req.Url,
 	}
-	// fmt.Println("hello world⭐😉😂🤣🫤💀✅😚🥀😼😁🗣️", req.Url, req.Id)
 
 	return c.JSON(http.StatusOK,linkMap[id])
 }
@@ -149,3 +125,85 @@ func DeleteHandler(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, links)
 }
+
+
+// func DirectHandler(c echo.Context) error {
+// 	id := c.Param("id")
+// 	link, found := linkMap[id]
+// 	if !found {
+// 		return c.String(http.StatusNotFound, "link not found")
+// 	}
+
+// 	if onClickCheck(link.Url, c) != nil {
+// 		return c.String(http.StatusNotFound, "link is not found")
+// 	}
+
+// 	if link.ClickRecord == nil {
+// 		link.ClickRecord = []ClickTime{}
+// 	}
+
+// 	link.ClickRecord = append(link.ClickRecord, ClickTime{
+// 		Date: time.Now(),
+// 	})
+// 	link.Clicks += 1 
+// 	return c.Redirect(http.StatusMovedPermanently, link.Url)
+
+// }
+
+
+func GetOneLink(c echo.Context) error {
+	id := c.Param("id")
+	link, found := linkMap[id]
+	if(!found) {
+		return c.String(http.StatusNotFound, "link not found")
+	}
+	return c.JSON(http.StatusOK, *link)
+}
+
+func getClickPerHours() {
+
+}
+// package main
+
+// import (
+// 	"context"
+// 	"log"
+// 	"os"
+// 	"time"
+
+// 	"github.com/joho/godotenv"
+// 	"go.mongodb.org/mongo-driver/mongo"
+// 	"go.mongodb.org/mongo-driver/mongo/options"
+// )
+
+
+// func initializeMongoDB() (*Database, error) {
+
+// 	if err := godotenv.Load(); err != nil {
+// 		log.Fatal("error loading .env file")
+// 	}
+	
+// 	mongoURI := os.Getenv("DATABASE_URI")
+// 	clientOptions := options.Client().ApplyURI(mongoURI)
+
+// 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+// 	defer cancel()
+
+// 	client, err := mongo.Connect(ctx, clientOptions)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	err = client.Ping(ctx, nil)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	log.Println("database connected")
+	
+// 	db := client.Database("urlShorten")
+
+// 		return &Database{
+// 		Client: client,
+// 		DB:     db,
+// 	}, nil
+// }
