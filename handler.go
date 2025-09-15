@@ -75,10 +75,6 @@ func SubmitHandler(c echo.Context) error {
 			"error": "invalid request",
 		})
 	}
-	if !linkValidation(req.Url) {
-		return c.String(http.StatusGatewayTimeout, "link is not availabel")
-	}
-
 	if !(len(req.Url) >= 4 && (req.Url[:4] == "http"  || req.Url[:5] == "https")) {
 		req.Url = "https://" + req.Url
 	}
