@@ -5,12 +5,15 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"github.com/dynann/url-shorten/lib"
 	"github.com/dynann/url-shorten/routes"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
+
+
 
 
 type TemplateRender struct {
@@ -33,18 +36,21 @@ func main() {
 	routes.UserRoute(e)
 	routes.LinkRoute(e)
 
+
 	if err := godotenv.Load(); err != nil {
 		log.Fatal("error loading .env file")
 	}
-	
-if err := lib.InitializeMongoDB(); err != nil {
-    log.Fatalf("Failed to connect to database: %v", err)  // ✅ Shows actual error
-}
 
-// ✅ Connection test
-if !lib.IsConnected() {
-    log.Fatal("Database connection test failed")
-}
+	var PORT = os.Getenv("PORT")
+	
+	if err := lib.InitializeMongoDB(); err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)  // ✅ Shows actual error
+	}
+
+	// ✅ Connection test
+	if !lib.IsConnected() {
+		log.Fatal("Database connection test failed")
+	}
 	
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
@@ -56,6 +62,6 @@ if !lib.IsConnected() {
 		AllowHeaders: []string{"*"},
 	}))
 	e.GET("/indirect/:id", RedirectHandler)
-	e.Logger.Fatal(e.Start(":8080"))
+	e.Logger.Fatal(e.Start(":"+PORT))
 	
 }

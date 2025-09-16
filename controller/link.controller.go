@@ -37,6 +37,50 @@ func onClickCheck(url string, c echo.Context) error{
 	err := c.Redirect(http.StatusFound, url)
 	return err
 }
+
+func countClickPerHour(clickRecord []model.ClickTime) []model.ClickPerHour{
+	
+	if len(clickRecord) == 0 {
+		return []model.ClickPerHour{}
+	}
+	values := []model.ClickPerHour{}
+	hour := 0
+	for hour < 24 {
+		var counts int = 0
+		for _, clicks := range clickRecord {
+			if (clicks.Date.Hour() + 7) == hour {
+				counts += 1
+			}
+		}
+		if (hour == 0) {
+			data := model.ClickPerHour{
+			Hour: 12,
+			Click: counts,
+		} 
+		values = append(values, data)
+		} else if (hour > 12) {
+			data := model.ClickPerHour{
+				Hour: (hour - 12),
+				Click: counts,
+			}
+		values = append(values, data)
+		} else if (hour < 12) {
+			data := model.ClickPerHour{
+				Hour: hour,
+				Click: counts,
+			}
+		values = append(values, data)
+		} else {
+			data := model.ClickPerHour{
+				Hour: hour,
+				Click: counts,
+			}
+		values = append(values, data)
+		}
+		hour += 1
+	}
+	return values
+}
  
 
 func GetLink(c echo.Context) error {
@@ -252,7 +296,67 @@ func updateOnLinkClick(link model.Link) error {
 	return nil
 }
 
+
+func ReturnClickByHours(c echo.Context) error {
+	linkCollection := lib.GetCollection("links")
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	id := c.Param("Id")
+	var link model.Link
+	defer cancel()
+	err := linkCollection.FindOne(ctx, bson.M{"_id": id}).Decode(&link)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, res.LinkResponse{
+			Status: http.StatusInternalServerError, 
+			Message: "error", 
+			Data: &echo.Map{"data": err.Error()}})
+	}
+	var data = countClickPerHour(link.ClickRecord)
+	fmt.Println("==> ❤️❤️", data)
+	return c.JSON(http.StatusOK, res.LinkResponse{
+			Status: http.StatusOK, 
+			Message: "success", 
+			Data: &echo.Map{"data": data}})
+}
+
 func RequestDirectLink(c echo.Context) error {
-	// linkCollection := lib.GetCollection("links")
-	return nil
+	linkCollection := lib.GetCollection("links")
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	id := c.Param("Id")
+	link := model.Link{}
+	defer cancel()
+	
+	err := linkCollection.FindOne(ctx, bson.M{"_id": id}).Decode(&link)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, res.LinkResponse{
+			Status: http.StatusInternalServerError, 
+			Message: "error", 
+			Data: &echo.Map{"data": err.Error()}})
+	}
+	if onClickCheck(link.Url, c) != nil {
+		return c.String(http.StatusNotFound, "link is not found")
+	}
+
+	if link.ClickRecord == nil {
+		link.ClickRecord = []model.ClickTime{}
+	}
+
+
+
+	link.ClickRecord = append(link.ClickRecord, model.ClickTime{
+		Date: time.Now(),
+	})
+	link.Clicks += 1
+	err = updateOnLinkClick(link)
+	if err != nil {
+	return c.JSON(http.StatusInternalServerError, res.LinkResponse{
+		Status: http.StatusInternalServerError,
+		Message: "fail to update",
+		Data: &echo.Map{"data": err.Error()},
+	})
+	}
+	return c.JSON(http.StatusAccepted, res.LinkResponse{
+		Status: http.StatusAccepted,
+		Message: "successful",
+		Data: &echo.Map{"data":  link},
+	})
 }

@@ -13,3 +13,8 @@ type Link struct {
 	Clicks      int				   `json:"clicks" bson:"clicks"`	
 	ClickRecord []ClickTime		   `json:"click_records" bson:"click_record"`
 }
+
+type ClickPerHour struct {
+	Hour int
+	Click int
+}

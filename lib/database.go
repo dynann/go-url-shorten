@@ -25,7 +25,6 @@ func InitializeMongoDB() error {
 	
 	
 	mongoURI := os.Getenv("DATABASE_URI")
-	fmt.Print(mongoURI)
 	clientOptions := options.Client().ApplyURI(mongoURI)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
