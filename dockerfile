@@ -11,6 +11,9 @@ RUN go mod download
 # Copy the rest of the source code
 COPY . .
 
+# Copy env file
+COPY .env .env
+
 # Build the Go binary
 RUN go build -o main .
 
