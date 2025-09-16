@@ -6,8 +6,6 @@ import (
 	"log"
 	"os"
 	"time"
-
-	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -18,10 +16,6 @@ type Database struct {
 }
 
 func InitializeMongoDB() error {
-
-	if err := godotenv.Load(); err != nil {
-		log.Fatal("error loading .env file")
-	}
 	
 	
 	mongoURI := os.Getenv("DATABASE_URI")
