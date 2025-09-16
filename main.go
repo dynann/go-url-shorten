@@ -8,7 +8,6 @@ import (
 	"os"
 	"github.com/dynann/url-shorten/lib"
 	"github.com/dynann/url-shorten/routes"
-	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
