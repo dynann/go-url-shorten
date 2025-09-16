@@ -6,9 +6,11 @@ import (
 )
 
 func LinkRoute(e *echo.Echo) {
+	e.GET("/:Id", controller.RequestDirectLink)
 	e.POST("/links", controller.CreateLink)
 	e.GET("/links", controller.GetAllLinks)
 	e.GET("/links/:Id", controller.GetLink)
 	e.DELETE("/links/:Id", controller.DeleteLink)
 	e.GET("/links/redirect/:Id", controller.RequestReDirectLink)
+	e.GET("/links/clicks-hour/:Id", controller.ReturnClickByHours)
 }
