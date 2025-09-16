@@ -37,9 +37,9 @@ func main() {
 	routes.LinkRoute(e)
 
 
-	if err := godotenv.Load(); err != nil {
-		log.Fatal("error loading .env file")
-	}
+	// if err := godotenv.Load(); err != nil {
+	// 	log.Fatal("error loading .env file")
+	// }
 
 	var PORT = os.Getenv("PORT")
 	
