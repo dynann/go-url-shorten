@@ -39,7 +39,7 @@ func onClickCheck(url string, c echo.Context) error{
 }
 
 func countClickPerHour(clickRecord []model.ClickTime) []model.ClickPerHour{
-	
+	today := time.Now().Day()
 	if len(clickRecord) == 0 {
 		return []model.ClickPerHour{}
 	}
@@ -48,9 +48,11 @@ func countClickPerHour(clickRecord []model.ClickTime) []model.ClickPerHour{
 	for hour < 24 {
 		var counts int = 0
 		for _, clicks := range clickRecord {
-			if (clicks.Date.Hour() + 7) == hour {
+			if(clicks.Date.Day() == today) {
+				if (clicks.Date.Hour() + 7) == hour {
 				counts += 1
 			}
+			}	
 		}
 		if (hour == 0) {
 			data := model.ClickPerHour{
@@ -311,7 +313,7 @@ func ReturnClickByHours(c echo.Context) error {
 			Data: &echo.Map{"data": err.Error()}})
 	}
 	var data = countClickPerHour(link.ClickRecord)
-	fmt.Println("==> ❤️❤️", data)
+	// fmt.Println("==> ❤️❤️", data)
 	return c.JSON(http.StatusOK, res.LinkResponse{
 			Status: http.StatusOK, 
 			Message: "success", 
