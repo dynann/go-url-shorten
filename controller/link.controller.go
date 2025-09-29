@@ -50,8 +50,8 @@ func countClickPerHour(clickRecord []model.ClickTime) []model.ClickPerHour{
 		for _, clicks := range clickRecord {
 			if(clicks.Date.Day() == today) {
 				if (clicks.Date.Hour() + 7) == hour {
-				counts += 1
-			}
+					counts += 1
+				}
 			}	
 		}
 		if (hour == 0) {
@@ -188,15 +188,13 @@ func CreateLink(c echo.Context) error {
 		ClickRecord: []model.ClickTime{},
 	}
 
-	result, err := linkCollection.InsertOne(ctx, newLink)
+	_, err := linkCollection.InsertOne(ctx, newLink)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, res.LinkResponse{
 			Status: http.StatusInternalServerError, 
 			Message: "error", 
 			Data: &echo.Map{"data": err.Error()}})
 	}
-
-	fmt.Print("-->>>>😁😁😼😼", result)
 
 	return c.JSON(http.StatusCreated, res.LinkResponse{
 		Status: http.StatusCreated, 
@@ -212,7 +210,7 @@ func DeleteLink(c echo.Context) error {
 
 	linkId := c.Param("Id")
 	result, err := linkCollection.DeleteOne(ctx, bson.M{"_id": linkId})
-	fmt.Println("❤️❤️❤️", err, "❤️❤️❤️")
+	// fmt.Println("❤️❤️❤️", err, "❤️❤️❤️")
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, res.LinkResponse{
 			Status: http.StatusInternalServerError,
@@ -361,4 +359,48 @@ func RequestDirectLink(c echo.Context) error {
 		Message: "successful",
 		Data: &echo.Map{"data":  link},
 	})
+}
+
+func StatisticByDate(c echo.Context) error {
+	linkCollection := lib.GetCollection("links")
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	id := c.Param("Id")
+	var date model.ClickTime
+	var link = model.Link{}
+	err := c.Bind(&date); if err != nil {
+		return c.JSON(http.StatusInternalServerError, res.LinkResponse{
+			Status: http.StatusInternalServerError,
+			Message: "error",
+			Data: &echo.Map{"data": err.Error()},
+
+		})
+	}
+
+	fmt.Println("==> ==> ==> ==> ==> ==> ==>", date)
+
+	result := linkCollection.FindOne(ctx, bson.M{ "_id": id }).Decode(&link)
+	if result != nil {
+		return c.JSON(http.StatusInternalServerError, res.LinkResponse{
+			Status: http.StatusInternalServerError,
+			Message: "error",
+			Data: &echo.Map{"data": result.Error()},
+
+		})
+	}
+
+	var statistics []model.ClickTime
+	for _, value := range link.ClickRecord {
+		if(date.Date.Day() == value.Date.Day()) {
+			statistics = append(statistics, value)
+		}
+	}
+
+	var data = countClickPerHour(statistics)
+	return c.JSON(http.StatusOK, res.LinkResponse{
+			Status: http.StatusOK,
+			Message: "success",
+			Data: &echo.Map{"data": data},
+	})
+
 }
