@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 	"time"
+
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -17,7 +19,11 @@ type Database struct {
 
 func InitializeMongoDB() error {
 	
-	
+	// if os.Getenv("RAILWAY_ENVIRONMENT") == "" {
+    //     if err := godotenv.Load(); err != nil {
+    //         log.Println("No .env file found, relying on Railway variables")
+    //     }
+    // }
 	mongoURI := os.Getenv("DATABASE_URI")
 	clientOptions := options.Client().ApplyURI(mongoURI)
 

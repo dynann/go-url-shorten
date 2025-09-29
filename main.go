@@ -6,8 +6,10 @@ import (
 	"log"
 	"net/http"
 	"os"
+
 	"github.com/dynann/url-shorten/lib"
 	"github.com/dynann/url-shorten/routes"
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -24,6 +26,12 @@ func (t *TemplateRender) Render(w io.Writer, name string, data interface{}, c ec
 }
 
 func main() {
+
+	// if os.Getenv("RAILWAY_ENVIRONMENT") == "" {
+    //     if err := godotenv.Load(); err != nil {
+    //         log.Println("No .env file found, relying on Railway variables")
+    //     }
+    // }
 
 	renderer := &TemplateRender{
 		Templates: template.Must(template.ParseGlob("template/*.html")),
@@ -60,7 +68,6 @@ func main() {
 		// AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
 		AllowHeaders: []string{"*"},
 	}))
-	e.GET("/indirect/:id", RedirectHandler)
 	e.Logger.Fatal(e.Start(":"+PORT))
 	
 }
