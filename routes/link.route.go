@@ -13,5 +13,5 @@ func LinkRoute(e *echo.Echo) {
 	e.DELETE("/links/:Id", controller.DeleteLink)
 	e.GET("/links/redirect/:Id", controller.RequestReDirectLink)
 	e.GET("/links/clicks-hour/:Id", controller.ReturnClickByHours)
-	e.GET("/links/clicks-hour-date/:Id", controller.StatisticByDate)
+	e.POST("/links/clicks-hour-date/:Id", controller.StatisticByDate)
 }
