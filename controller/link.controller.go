@@ -83,6 +83,52 @@ func countClickPerHour(clickRecord []model.ClickTime) []model.ClickPerHour{
 	}
 	return values
 }
+
+func countClickPerHourByDate(clickRecord []model.ClickTime, day time.Time) []model.ClickPerHour{
+	// today := time.Now().Day()
+	if len(clickRecord) == 0 {
+		return []model.ClickPerHour{}
+	}
+	values := []model.ClickPerHour{}
+	hour := 0
+	for hour < 24 {
+		var counts int = 0
+		for _, clicks := range clickRecord {
+			if(clicks.Date.Day() == day.Day()) {
+				if (clicks.Date.Hour() + 7) == hour {
+					counts += 1
+				}
+			}	
+		}
+		if (hour == 0) {
+			data := model.ClickPerHour{
+			Hour: 12,
+			Click: counts,
+		} 
+		values = append(values, data)
+		} else if (hour > 12) {
+			data := model.ClickPerHour{
+				Hour: (hour - 12),
+				Click: counts,
+			}
+		values = append(values, data)
+		} else if (hour < 12) {
+			data := model.ClickPerHour{
+				Hour: hour,
+				Click: counts,
+			}
+		values = append(values, data)
+		} else {
+			data := model.ClickPerHour{
+				Hour: hour,
+				Click: counts,
+			}
+		values = append(values, data)
+		}
+		hour += 1
+	}
+	return values
+}
  
 
 func GetLink(c echo.Context) error {
@@ -396,7 +442,22 @@ func StatisticByDate(c echo.Context) error {
 		}
 	}
 
-	var data = countClickPerHour(statistics)
+	var data = countClickPerHourByDate(statistics, date.Date)
+	if len(data) == 0 {
+		i := 0
+		for (i < 24) {
+			if(i == 0) {
+				data = append(data, model.ClickPerHour{ Hour: 12, Click: 0 })
+			} else if (i < 12) {
+				data = append(data, model.ClickPerHour{ Hour: i, Click: 0 })
+			} else if (i == 12) {
+				data = append(data, model.ClickPerHour{ Hour: 12, Click: 0})
+			} else {
+				data = append(data, model.ClickPerHour{ Hour: i - 12, Click: 0})
+			}
+			i++
+		}
+	}
 	return c.JSON(http.StatusOK, res.LinkResponse{
 			Status: http.StatusOK,
 			Message: "success",
